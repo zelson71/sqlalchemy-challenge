@@ -1,0 +1,12 @@
+.bground{
+    background-color: cornflowerblue;
+  }
+.two{
+    background-color: darkorchid;
+    color: darkseagreen;
+}
+ #link {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+}

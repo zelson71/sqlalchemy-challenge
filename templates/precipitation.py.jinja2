@@ -1,7 +1,7 @@
-{% extends 'layout.html' %}
+{% extends 'layout.py.jinja2' %}
 
 {% block body %}
-<div class="bg-info text-white jumbotron text-center " style = "background-color: cornflowerblue ; color: cornsilk;">
+<div class="bg-info text-white jumbotron text-center two " >
     <h1>Precipitation </h1>
    
      <form "http://localhost:5000/precipitation.py.jinja2" method = "POST">
@@ -16,5 +16,8 @@
      </form>
 </div>
 <div class = "fill" style = "background-color: red;">
+
+
 </div>
 {% endblock %}
+

@@ -165,7 +165,7 @@ def start(start=None):
 @app.route("/api/v1.0/<start>/<end>")
 def start_end(start=None, end=None):
     # Docstring
-    """Return a JSON list of tmin, tmax, tavg for the dates in range of start date and end date inclusive"""
+    # Return a JSON list of tmin, tmax, tavg for the dates in range of start date and end date inclusive"""
 
     between_dates = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(
         Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()

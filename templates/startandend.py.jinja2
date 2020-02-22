@@ -1,0 +1,27 @@
+{% extends 'layout.py.jinja2' %}
+
+{% block body %}
+<div class="bg-info text-white jumbotron text-center two " >
+    <h1>Start and End </h1>
+   
+     <form "http://localhost:5000/precipitation.py.jinja2" method = "POST">
+     
+  <label for="start">Date:</label>
+
+    <input style = "color: black;" type="date" id="start" name="date"
+       value="2018-07-22"
+       min="2010-01-01" max="2018-12-31">
+    <label for="end">Date:</label>
+
+    <input style = "color: black;" type="date" id="end" name="date"
+       value="2018-07-22"
+       min="2010-01-01" max="2018-12-31">
+    <input style = "color:black; "type = "submit" value="submit" />
+     </form>
+</div>
+<div class = "fill" style = "background-color: red;">
+
+
+</div>
+{% endblock %}
+

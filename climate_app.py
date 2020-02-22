@@ -49,28 +49,51 @@ def daily_normals(date):
 
 @app.route("/")
 def home():
-    return render_template('index.py.jinja2')
+    return render_template('index.html')
 
 
 @app.route("/api/v1.0/precipitation")
 def prcp():
-    """Convert the query results to a Dictionary using `date` as the key and `prcp` as the value."""
-    last_date = session.query(Measurement.date).order_by(
+
+    # """Convert the query results to a Dictionary using `date` as the key and `prcp` as the value."""
+    # last_date = session.query(Measurement.date).order_by(
+    #     Measurement.date.desc()).first()
+    # last_date = last_date[0]
+
+    # last_year = dt.datetime.strptime(
+    #     last_date, "%Y-%m-%d") - dt.timedelta(days=365)
+
+    # precip_data = session.query(Measurement.date, Measurement.prcp).filter(
+    #     Measurement.date >= last_year).all()
+    # precip_dict = []
+    # for date, prcp in precip_data:
+    #     results_dict = {}
+    #     results_dict["date"] = date
+    #     results_dict["prcp"] = prcp
+    #     precip_dict.append(results_dict)
+    # return jsonify(precip_dict)
+    # Docstring
+    """Return a list of precipitations from last year"""
+    # Design a query to retrieve the last 12 months of precipitation data and plot the results
+    max_date = session.query(Measurement.date).order_by(
         Measurement.date.desc()).first()
-    last_date = last_date[0]
 
-    last_year = dt.datetime.strptime(
-        last_date, "%Y-%m-%d") - dt.timedelta(days=365)
+    # Get the first element of the tuple
+    max_date = max_date[0]
 
-    precip_data = session.query(Measurement.date, Measurement.prcp).filter(
-        Measurement.date >= last_year).all()
-    precip_dict = []
-    for date, prcp in precip_data:
-        results_dict = {}
-        results_dict["date"] = date
-        results_dict["prcp"] = prcp
-        precip_dict.append(results_dict)
-    return jsonify(precip_dict)
+    # Calculate the date 1 year ago from today
+    # The days are equal 366 so that the first day of the year is included
+    year_ago = dt.datetime.strptime(
+        max_date, "%Y-%m-%d") - dt.timedelta(days=366)
+
+    # Perform a query to retrieve the data and precipitation scores
+    results_precipitation = session.query(
+        Measurement.date, Measurement.prcp).filter(Measurement.date >= year_ago).all()
+
+    # Convert list of tuples into normal list
+    precipitation_dict = dict(results_precipitation)
+
+    return jsonify(precipitation_dict)
 
 
 @app.route("/api/v1.0/stations")
@@ -85,7 +108,7 @@ def stations():
     #     results_dict["date"] = date
     #     results_dict["prcp"] = prcp
     #     station_dict.append(station_dict)
-    return jsonify(results)
+    return jsonify(station_list)
 
 
 @app.route("/api/v1.0/tobs")
@@ -97,60 +120,66 @@ def tobs():
     last_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
 
     """* Return a JSON list of Temperature Observations (tobs) for the previous year."""
+
     tobs_data = session.query(Measurement.date, Measurement.tobs).filter(
-        Measurement.date >= last_year).order_by(Measurement.date).all()
+        Measurement.date >= last_year).all()
 
     return jsonify(tobs_data)
 
 
 @app.route("/api/v1.0/temp/<start>")
-def calc_temps(start):
+def calc_temps(start=None):
     """When given the start only, calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date."""
 
-    #start_date = dt.datetime.strptime(start)
+    # start_date = dt.datetime.strptime(start)
 
     """Return a JSON list of the minimum temperature, the average temperature, and the max temperature"""
 
-    # query_data = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.round(func.avg(Measurement.tobs))).\
-    #     filter(Measurement.date >= start).all()
+    # query_data = (Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+    #     filter(Measurement.date >= start).group_by(Measurement.date).all()
 
-    # result = list(np.ravel(query_data))
-    results = daily_normals(start)
-    temps = []
-    for temp in results:
-        temp_dict = {}
-        temp_dict['TMIN'] = temp[0]
-        temp_dict['TAVG'] = temp[1]
-        temp_dict['TMAX'] = temp[2]
-        temps.append(temp.dict)
-    return jsonify(temps)
+    # result = list(query_data)
+
+    # return jsonify(result)
+
+    from_start = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(
+        Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()
+    from_start_list = list(from_start)
+    return jsonify(from_start_list)
 
 
 @app.route("/api/v1.0/temp/<start>/<end>")
-def calc_temps2(start, end):
-    """When given the start and the end date, calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive."""
+def calc_temps2(start="2016-04-10", end="2017-04-18"):
+    # """When given the start and the end date, calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive."""
 
-    start_date = dt.datetime.strptime(start, "%Y-%m-%d")
-    end_date = dt.datetime.strptime(end, "%Y-%m-%d")
+    # start_date = dt.datetime.strptime(start, "%Y-%m-%d")
+    # end_date = dt.datetime.strptime(end, "%Y-%m-%d")
 
-    """Return a JSON list of the minimum temperature, the average temperature, and the max temperature"""
+    # """Return a JSON list of the minimum temperature, the average temperature, and the max temperature"""
 
-    query_data = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.round(func.avg(Measurement.tobs))).\
-        filter(Measurement.date.between(start_date, end_date)).all()
+    # query_data = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.round(func.avg(Measurement.tobs))).\
+    #     filter(Measurement.date.between(start_date, end_date)).all()
 
-    result = list(np.ravel(query_data))
+    # result = list(np.ravel(query_data))
 
-    return jsonify(result)
+    # return jsonify(result)
+ # Docstring
+    """Return a JSON list of tmin, tmax, tavg for the dates in range of start date and end date inclusive"""
+
+    between_dates = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(
+        Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()
+    between_dates_list = list(between_dates)
+    return jsonify(between_dates_list)
 
 
 @app.route("/precipitation.py.jinja2", methods=['GET', 'POST'])
 def webprecip():
-    form = 'precipitation.py.jinga2'(request.form)
-    if request.method == 'POST':
+    # form = 'precipitation.py.jinga2'(request.form)
+    # if request.method == 'POST':
 
-        date = date
-    else:
-        return render_template('precipitation.py.jinja2')
+    #     date = date
+    # else:
+    return render_template('precipitation.py.jinja2')
 
 
 if __name__ == '__main__':
